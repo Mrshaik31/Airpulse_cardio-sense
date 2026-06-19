@@ -1,0 +1,355 @@
+{% extends "base.html" %} {% block content %}
+<section class="bg-gradient-to-b from-white to-slate-50 py-12 rounded-md">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+    <div>
+      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">
+        Capture. Visualize. <span class="text-indigo-600">Analyze</span>.
+      </h1>
+      <p class="mt-4 text-lg text-slate-600">
+        Record cardiopulmonary sounds with your mic or stethoscope, preview
+        waveforms in real time, and run on-device or server-side AI analysis.
+      </p>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="{{ url_for('diagnose') }}" class="btn">Start Diagnosis</a>
+        <a href="{{ url_for('recordings') }}" class="btn-outline"
+          >Saved Recordings</a
+        >
+        <a href="{{ url_for('upload_wav') }}" class="btn-outline">Upload WAV</a>
+      </div>
+
+      <div class="mt-6 flex gap-4 items-center text-sm text-slate-500">
+        <div class="flex items-center gap-2">
+          <svg
+            class="w-5 h-5 text-indigo-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M12 8v4l3 3"
+            />
+          </svg>
+          <div>
+            <strong class="block">Quick analysis</strong>
+            <span class="text-xs">Get a fast summary after upload</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg
+            class="w-5 h-5 text-green-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M9 12l2 2 4-4"
+            />
+          </svg>
+          <div>
+            <strong class="block">Local-first</strong>
+            <span class="text-xs">Files are stored where you run the app</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div class="card p-0 overflow-hidden">
+        <canvas id="heroCanvas" height="220"></canvas>
+      </div>
+      <p class="text-center text-sm text-slate-500 mt-2">
+        Realtime waveform preview
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-6xl mx-auto mt-10 grid md:grid-cols-3 gap-6">
+  <div class="card">
+    <h3 class="font-bold text-lg">Realtime Visuals</h3>
+    <p class="mt-2 text-slate-600">
+      Canvas-based waveform and spectrogram previews for quick feedback.
+    </p>
+  </div>
+  <div class="card">
+    <h3 class="font-bold text-lg">Model-backed Analysis</h3>
+    <p class="mt-2 text-slate-600">
+      Plug in your PyTorch model to run chunked spectrogram inference (or use
+      the demo).
+    </p>
+  </div>
+  <div class="card">
+    <h3 class="font-bold text-lg">Share & Export</h3>
+    <p class="mt-2 text-slate-600">
+      Create expiring share links or download audio for further review.
+    </p>
+  </div>
+</section>
+
+<section class="max-w-6xl mx-auto mt-8 grid md:grid-cols-3 gap-6">
+  <div class="card md:col-span-2">
+    <h3 class="font-bold text-lg">How it works</h3>
+    <p class="mt-2 text-slate-600">
+      Record a short clip, save it to the server, and run analysis which slices
+      the audio into fixed-length chunks, converts to spectrograms, and runs a
+      classifier per chunk. The UI aggregates results into an easy-to-read
+      summary.
+    </p>
+
+    <div class="mt-4 grid sm:grid-cols-2 gap-4">
+      <div class="p-4 bg-slate-50 border rounded">
+        <strong>Quick Start</strong>
+        <ol class="list-decimal list-inside text-sm mt-2 text-slate-600">
+          <li>
+            Open
+            <a class="text-indigo-600" href="{{ url_for('diagnose') }}"
+              >Start Diagnosis</a
+            >.
+          </li>
+          <li>
+            Choose your input and press <em>Start</em> to preview the waveform.
+          </li>
+          <li>Record, then Save to upload and optionally analyze.</li>
+          <li>
+            Visit
+            <a class="text-indigo-600" href="{{ url_for('recordings') }}"
+              >Saved Recordings</a
+            >
+            to view results.
+          </li>
+        </ol>
+      </div>
+
+      <div class="p-4 bg-slate-50 border rounded">
+        <strong>Supported Formats</strong>
+        <p class="text-sm mt-2 text-slate-600">
+          Browser capture uses WebM/Opus. Manual uploads accept WAV/MP3/WebM.
+          For best results use WAV (PCM).
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="modelStatusCard">
+    <div class="flex items-center justify-between">
+      <h3 class="font-bold text-lg">Model status</h3>
+      <a id="modelInfoQuick" class="text-indigo-600 text-sm hidden sm:inline"
+        >Details</a
+      >
+    </div>
+    <p class="mt-2 text-slate-600" id="modelStatus">
+      Checking model availability...
+    </p>
+    <div class="mt-3 text-sm text-slate-500">
+      <p>
+        <strong>Privacy:</strong> Audio files remain on the machine or server
+        where you run the app unless you share them.
+      </p>
+      <p class="mt-2">
+        <strong>Developer:</strong> Configure `ml_inference.py` or environment
+        variables to point at your model.
+      </p>
+      <p class="mt-2">
+        <strong>More:</strong> See the
+        <a class="text-indigo-600" href="/README.md">README</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-6xl mx-auto mt-8 grid md:grid-cols-2 gap-6">
+  <div class="card">
+    <h3 class="font-bold text-lg">Recording tips</h3>
+    <ul class="list-disc pl-5 mt-2 text-slate-600 text-sm">
+      <li>Place your stethoscope or mic firmly for consistent signals.</li>
+      <li>Record at least 3–5 seconds per site to capture cycles.</li>
+      <li>Reduce background noise and avoid touching the microphone.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3 class="font-bold text-lg">Contribute</h3>
+    <p class="mt-2 text-slate-600 text-sm">
+      Fork the repo to add models, preprocessing improvements, or tests for
+      inference and uploads.
+    </p>
+    <div class="mt-3">
+      <a class="btn" href="https://github.com/" target="_blank"
+        >Open on GitHub</a
+      >
+    </div>
+  </div>
+</section>
+
+<section class="bg-slate-800 text-slate-200 mt-12">
+  <div
+    class="max-w-6xl mx-auto px-4 py-12 grid sm:grid-cols-2 md:grid-cols-4 gap-6"
+  >
+    <div>
+      <a
+        href="{{ url_for('index') }}"
+        class="font-extrabold text-xl text-white"
+      >
+        AirPulse<span class="text-indigo-400">Lite</span>
+      </a>
+      <p class="mt-3 text-sm text-slate-300">
+        Lightweight cardiopulmonary sound capture, visualization, and
+        model-backed analysis—run locally or on your server.
+      </p>
+    </div>
+
+    <div>
+      <h4 class="font-semibold text-white">Quick Links</h4>
+      <ul class="mt-3 text-sm text-slate-300 space-y-2">
+        <li>
+          <a class="hover:text-white" href="{{ url_for('diagnose') }}"
+            >Start Diagnosis</a
+          >
+        </li>
+        <li>
+          <a class="hover:text-white" href="{{ url_for('recordings') }}"
+            >Saved Recordings</a
+          >
+        </li>
+        <li>
+          <a class="hover:text-white" href="{{ url_for('chatbot') }}"
+            >ChatBot</a
+          >
+        </li>
+        <li>
+          <a class="hover:text-white" href="{{ url_for('upload_wav') }}"
+            >Upload WAV</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <h4 class="font-semibold text-white">Resources</h4>
+      <ul class="mt-3 text-sm text-slate-300 space-y-2">
+        <li><a class="hover:text-white" href="/README.md">README</a></li>
+        <li>
+          <a class="hover:text-white" href="https://github.com/" target="_blank"
+            >GitHub</a
+          >
+        </li>
+        <li><a class="hover:text-white" href="#">Model docs</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h4 class="font-semibold text-white">Contact</h4>
+      <p class="mt-3 text-sm text-slate-300">Questions or issues? Reach out:</p>
+      <p class="mt-2 text-sm">
+        <a class="hover:text-white" href="mailto:airpulseinfo86@gmail.com"
+          >airpulseinfo86@gmail.com</a
+        >
+      </p>
+      <div class="mt-4 flex gap-3">
+        <a
+          class="text-slate-300 hover:text-white"
+          href="https://github.com/"
+          target="_blank"
+          aria-label="GitHub"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path
+              d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.69-3.88-1.54-3.88-1.54-.53-1.36-1.29-1.72-1.29-1.72-1.06-.73.08-.72.08-.72 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.26 3.38.96.11-.75.41-1.26.74-1.55-2.56-.29-5.26-1.28-5.26-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.45.11-3.02 0 0 .97-.31 3.18 1.18a11.06 11.06 0 0 1 2.9-.39c.99.01 1.99.13 2.9.39 2.2-1.49 3.16-1.18 3.16-1.18.63 1.57.23 2.73.11 3.02.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.28 5.67.42.36.8 1.08.8 2.18 0 1.58-.01 2.86-.01 3.25 0 .31.21.68.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"
+            />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-slate-700 mt-6">
+    <div
+      class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between text-sm text-slate-400"
+    >
+      <div>© {{ 2025 }} AirPulse Lite — Prototype. All rights reserved.</div>
+      <div class="mt-2 sm:mt-0">
+        Built with ❤️ • <a class="hover:text-white" href="#">Privacy</a> •
+        <a class="hover:text-white" href="#">Terms</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %} {% block scripts %}
+<script>
+  // Hero animated waveform (keeps the previous behavior)
+  (function () {
+    const c = document.getElementById("heroCanvas");
+    if (!c) return;
+    const ctx = c.getContext("2d");
+    function resize() {
+      c.width = c.parentElement.clientWidth;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    function draw() {
+      const w = c.width,
+        h = c.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(0, 0, w, h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#6366f1";
+      ctx.beginPath();
+      const t = Date.now() / 600;
+      for (let x = 0; x < w; x++) {
+        const v =
+          Math.sin(x / 28 + t) * 0.28 + Math.sin(x / 6 + t * 1.8) * 0.08;
+        const y = h / 2 + v * (h * 0.36);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  // Fetch model info and update status
+  (function () {
+    fetch("/model-info")
+      .then((r) => r.json())
+      .then((j) => {
+        const el = document.getElementById("modelStatus");
+        const quick = document.getElementById("modelInfoQuick");
+        if (!el) return;
+        if (!j.ok) {
+          el.textContent = "Model info not available on this server.";
+          return;
+        }
+        const m = j.model;
+        const exists = m.model_exists ? "Yes" : "No";
+        el.innerHTML = `Path: <code>${
+          m.model_path || "—"
+        }</code><br>Exists: <strong>${exists}</strong><br>Device: <code>${
+          m.device
+        }</code>`;
+        if (quick) quick.classList.remove("hidden");
+        if (quick)
+          quick.addEventListener("click", (e) => {
+            e.preventDefault();
+            document.getElementById("modelInfoBtn")?.click();
+          });
+      })
+      .catch(() => {
+        const el = document.getElementById("modelStatus");
+        if (el) el.textContent = "Model endpoint not reachable.";
+      });
+  })();
+</script>
+{% endblock %}

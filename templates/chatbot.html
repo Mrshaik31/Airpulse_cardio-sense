@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block content %}
+<h1 class="text-2xl font-bold mb-6">AI ChatBot</h1>
+<div class="max-w-2xl mx-auto">
+  <div class="card p-4 mb-6">
+    <label for="recSelect" class="block font-medium mb-2"
+      >Select a recording to discuss:</label
+    >
+    <select id="recSelect" class="input w-full mb-2"></select>
+    <div id="recSummary" class="text-sm text-slate-600 mb-2"></div>
+    <button id="startChatBtn" class="btn" disabled>Start Chat</button>
+  </div>
+  <div id="chatSection" class="card p-4 hidden">
+    <div id="chatMessages" class="chat-messages mb-4"></div>
+    <div class="chat-input-area flex gap-2">
+      <textarea
+        id="chatInput"
+        rows="2"
+        class="w-full border rounded p-2 text-sm"
+        placeholder="Type your question..."
+      ></textarea>
+      <button id="chatSend" class="btn">Send</button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+{% endblock %}

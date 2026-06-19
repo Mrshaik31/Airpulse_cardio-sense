@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-bold">Recording #{{ rec["id"] }}</h1>
+  <a href="{{ url_for('recordings') }}" class="text-sm text-indigo-600 underline">← Back to list</a>
+</div>
+
+<div class="grid md:grid-cols-3 gap-6">
+  <div class="md:col-span-2 space-y-4">
+    <div class="card">
+      <h3 class="font-semibold mb-2">Overview</h3>
+      <ul class="text-sm text-slate-600">
+        <li><span class="text-slate-500">Created:</span> {{ rec["created_at"]|dt }}</li>
+        <li><span class="text-slate-500">Duration:</span> {{ '%.1f' % (rec["duration_sec"] or 0) }}s</li>
+        <li><span class="text-slate-500">Device:</span> {{ rec["device_label"] or 'Unknown' }}</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 class="font-semibold mb-2">Playback</h3>
+      <audio controls src="{{ url_for('uploaded_file', filename=rec['filename']) }}" class="w-full"></audio>
+    </div>
+  </div>
+
+  <aside class="space-y-4">
+    <div class="card">
+      <h3 class="font-semibold mb-2">AI / ML Analysis</h3>
+      <p class="text-sm text-slate-600 mb-3">Runs a placeholder analysis. Replace later with your real model.</p>
+      <button id="btnAnalyze" class="btn w-full">Run Analysis</button>
+      <pre id="analysisOut" class="mt-3 bg-slate-900 text-slate-100 p-3 rounded text-xs overflow-auto">No output yet.</pre>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const btn = document.getElementById('btnAnalyze');
+const out = document.getElementById('analysisOut');
+btn.addEventListener('click', async () => {
+  btn.disabled = true;
+  btn.textContent = 'Analyzing...';
+  out.textContent = 'Running...';
+  try {
+    const res = await fetch('{{ url_for("api_analyze", rec_id=rec["id"]) }}', { method: 'POST' });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'Failed');
+    out.textContent = JSON.stringify(j.results, null, 2);
+  } catch (e) {
+    out.textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Analysis';
+  }
+});
+</script>
+{% endblock %}

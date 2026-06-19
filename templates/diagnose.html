@@ -1,0 +1,145 @@
+{% extends "base.html" %} {% block content %}
+<h1 class="text-2xl font-bold mb-4">Live Diagnosis</h1>
+
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-4">
+    <!-- Waveform card -->
+    <div class="card p-0 overflow-hidden bg-black">
+      <canvas
+        id="scope"
+        height="260"
+        class="w-full"
+        role="img"
+        aria-label="Live audio waveform"
+      ></canvas>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-wrap gap-3 items-start">
+      <!-- Input device -->
+      <div class="flex-1 min-w-[220px]">
+        <label class="label block mb-1 text-sm font-medium text-slate-700">
+          Input device
+        </label>
+        <select id="deviceSelect" class="input w-full"></select>
+      </div>
+
+      <!-- Mode -->
+      <div class="min-w-[140px]">
+        <label class="label block mb-1 text-sm font-medium text-slate-700">
+          Mode
+        </label>
+        <select id="modeSelect" class="input w-full">
+          <option value="heart">Heart</option>
+          <option value="lung">Lung</option>
+        </select>
+      </div>
+
+      <!-- Start/Stop -->
+      <div class="flex gap-2 items-end">
+        <button id="btnStart" class="btn">Start</button>
+        <button id="btnStop" class="btn-danger" disabled>Stop</button>
+      </div>
+
+      <!-- Record/Save -->
+      <div class="flex gap-2 items-end">
+        <button id="btnRecord" class="btn-outline" disabled>Record</button>
+        <button id="btnSave" class="btn-outline" disabled>Save</button>
+      </div>
+
+      <!-- Notes -->
+      <div class="flex-1 min-w-[220px]">
+        <label class="label block mb-1 text-sm font-medium text-slate-700">
+          Recording name
+        </label>
+        <input
+          id="recordingName"
+          class="input w-full"
+          placeholder="Optional name, e.g. 'Aortic area'"
+        />
+      </div>
+
+      <!-- Notes -->
+      <div class="flex-1 min-w-[220px]">
+        <label class="label block mb-1 text-sm font-medium text-slate-700">
+          Notes
+        </label>
+        <textarea
+          id="notes"
+          rows="2"
+          class="input w-full"
+          placeholder="Optional notes about location or patient"
+        ></textarea>
+      </div>
+
+      <!-- Analyze / Download -->
+      <div class="flex flex-wrap gap-3 items-center mt-2 w-full">
+        <button id="btnAnalyze" class="btn-outline" disabled>
+          Analyze after upload
+        </button>
+        <a
+          id="downloadLink"
+          class="text-sm text-indigo-600 hidden"
+          download="capture.webm"
+        >
+          Download recording
+        </a>
+      </div>
+
+      <!-- Preview -->
+      <div id="previewWrap" class="mt-2 hidden w-full">
+        <audio id="previewAudio" controls class="w-full"></audio>
+        <div id="previewSpecWrap" class="mt-2 hidden w-full">
+          <div class="text-sm text-slate-600 mb-1">Spectrogram preview</div>
+          <div class="w-full bg-slate-50 p-2 rounded">
+            <img
+              id="previewSpecImg"
+              alt="Spectrogram preview"
+              class="w-full rounded"
+              style="max-height: 320px; object-fit: contain"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis + status -->
+      <div
+        id="analyzeResult"
+        class="mt-3 w-full"
+        role="status"
+        aria-live="polite"
+      ></div>
+      <div
+        id="status"
+        class="text-sm text-slate-500 w-full"
+        role="status"
+        aria-live="polite"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="space-y-3">
+    <div class="card">
+      <h3 class="font-semibold">Tips</h3>
+      <ul class="mt-2 list-disc pl-5 text-sm text-slate-600">
+        <li>
+          Select your external mic if connected through the headphone jack.
+        </li>
+        <li>Keep the environment quiet for better signal quality.</li>
+        <li>Use “Record” to capture and “Save” to store.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 class="font-semibold mb-1">Current</h3>
+      <p class="text-sm text-slate-600">
+        Mode: <span id="modeBadge" class="font-bold">heart</span>
+      </p>
+      <p class="text-sm text-slate-600">Duration: <span id="dur">0.0</span>s</p>
+    </div>
+  </aside>
+</div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/diagnose.js') }}"></script>
+{% endblock %}

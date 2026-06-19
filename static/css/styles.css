@@ -1,0 +1,153 @@
+/* Plain CSS so no build step is needed */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  background: #4f46e5;
+  color: #fff;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.btn:hover {
+  background: #4338ca;
+}
+.btn-outline {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  background: #fff;
+  transition: background 0.2s;
+}
+.btn-outline:hover {
+  background: #f1f5f9;
+}
+.btn-danger {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  background: #e11d48;
+  color: #fff;
+  transition: background 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.btn-danger:hover {
+  background: #be123c;
+}
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  outline: none;
+}
+.input:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+  border-color: #6366f1;
+}
+.label {
+  display: block;
+  font-size: 0.875rem;
+  color: #475569;
+  margin-bottom: 0.25rem;
+}
+
+/* Accessibility helpers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus-visible outlines for keyboard users */
+.btn:focus,
+.btn-outline:focus,
+.btn-danger:focus,
+a:focus {
+  outline: 3px solid rgba(99, 102, 241, 0.45);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* Chat UI */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 56vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+.chat-bubble {
+  max-width: 78%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  line-height: 1.25;
+}
+.chat-bubble.assistant {
+  background: #f1f5f9;
+  color: #0f172a;
+  align-self: flex-start;
+  border-top-left-radius: 0.25rem;
+}
+.chat-bubble.user {
+  background: #eef2ff;
+  color: #0f172a;
+  align-self: flex-end;
+  border-top-right-radius: 0.25rem;
+}
+.chat-meta {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+.chat-input-area {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.chat-typing {
+  display: inline-block;
+  width: 48px;
+  height: 18px;
+}
+.chat-typing span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #94a3b8;
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: blink 1.2s infinite;
+}
+@keyframes blink {
+  0% {
+    opacity: 0.2;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 0.2;
+    transform: translateY(0);
+  }
+}

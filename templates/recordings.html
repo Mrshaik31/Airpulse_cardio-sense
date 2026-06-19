@@ -1,0 +1,466 @@
+{% extends "base.html" %} {% block content %}
+<div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900">Saved Recordings</h1>
+    <p class="text-sm text-slate-500 mt-1">
+      Manage and play back recordings captured from the Diagnose tool.
+    </p>
+  </div>
+
+  <div class="flex gap-3 items-center">
+    <a
+      href="{{ url_for('diagnose') }}"
+      class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+    >
+      New Recording
+    </a>
+
+    <button
+      id="analyzeAll"
+      class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+      aria-label="Analyze all recordings"
+    >
+      Analyze All
+    </button>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% if recordings|length == 0 %}
+  <div
+    class="col-span-1 md:col-span-2 lg:col-span-3 bg-white border border-dashed border-slate-200 rounded-xl p-6 text-sm text-slate-600 flex items-center justify-between"
+  >
+    <p>
+      No recordings yet. Go to
+      <a
+        class="text-indigo-600 underline font-medium"
+        href="{{ url_for('diagnose') }}"
+      >
+        Start Diagnosis
+      </a>
+      to capture one.
+    </p>
+  </div>
+  {% endif %} {% for r in recordings %}
+  <div
+    class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"
+    data-rec-id="{{ r['id'] }}"
+    data-filename="{{ r['filename'] }}"
+  >
+    <!-- Card main row -->
+    <div class="flex flex-wrap gap-4 items-start">
+      <!-- Icon -->
+      <div class="flex-none">
+        <div
+          class="w-14 h-14 rounded-lg bg-indigo-50 flex items-center justify-center"
+        >
+          <svg
+            width="36"
+            height="18"
+            viewBox="0 0 36 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 9h4l2-6 2 12 2-8 2 4 2-10 2 14 2-12 2 8 2-4 2 6h4"
+              stroke="#6366F1"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="flex-1 min-w-[220px]">
+        <div class="flex items-start justify-between gap-2 flex-wrap">
+          <div class="min-w-0">
+            {% if r['title'] and r['title']|trim %}
+            <h3 class="font-semibold text-slate-900 truncate">
+              {{ r['title'] }}
+              <span class="text-xs text-slate-400 font-normal">
+                • {{ r['created_at']|dt }}</span
+              >
+            </h3>
+            {% else %}
+            <h3 class="font-semibold text-slate-900 truncate">
+              Recording #{{ r['id'] }} • {{ r['created_at']|dt }}
+            </h3>
+            {% endif %}
+            <div
+              class="mt-1 text-xs text-slate-500 flex flex-wrap items-center gap-1"
+            >
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100"
+              >
+                ⏱ {{ '%.1f' % (r['duration_sec'] or 0) }}s
+              </span>
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100"
+              >
+                🎙 {{ r['device_label'] or 'Unknown' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="text-xs text-slate-400 flex items-center">
+            #{{ r['id'] }}
+          </div>
+        </div>
+
+        {% if r['notes'] %}
+        <p class="mt-3 text-sm text-slate-600 line-clamp-2">{{ r['notes'] }}</p>
+        {% endif %}
+
+        <!-- Audio + controls row -->
+        <div class="mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
+          <audio
+            class="recording-audio flex-1 min-w-[160px] max-w-xs"
+            preload="none"
+            src="{{ url_for('uploaded_file', filename=r['filename']) }}"
+            aria-label="Recording {{ r['id'] }} audio"
+          ></audio>
+
+          <button
+            class="btn-share inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            data-id="{{ r['id'] }}"
+            aria-label="Share recording {{ r['id'] }}"
+          >
+            Share
+          </button>
+          <button
+            class="btn-delete inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+            data-id="{{ r['id'] }}"
+            aria-label="Delete recording {{ r['id'] }}"
+          >
+            Delete
+          </button>
+          <a
+            class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            href="{{ url_for('uploaded_file', filename=r['filename']) }}"
+            download
+            aria-label="Download recording {{ r['id'] }}"
+          >
+            Download
+          </a>
+
+          <a
+            href="{{ url_for('recording_detail', rec_id=r['id']) }}"
+            class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            aria-label="View details for recording {{ r['id'] }}"
+          >
+            Details
+          </a>
+        </div>
+      </div>
+
+      <!-- Actions (Analyze / Share) -->
+      <div
+        class="flex-none w-full sm:w-auto sm:text-right mt-2 sm:mt-0 sm:ml-2"
+      >
+        <div
+          class="flex w-full sm:w-auto justify-start sm:justify-end gap-2 sm:flex-col items-stretch"
+        >
+          <button
+            class="btn-analyze inline-flex justify-center items-center px-3 py-1.5 text-xs font-medium rounded-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            data-id="{{ r['id'] }}"
+            aria-label="Analyze recording {{ r['id'] }}"
+          >
+            Analyze
+          </button>
+          <button
+            class="btn-share inline-flex justify-center items-center px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            data-id="{{ r['id'] }}"
+            aria-label="Share recording {{ r['id'] }}"
+          >
+            Share
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis result -->
+    <div
+      class="mt-4 analysis-result hidden text-sm text-slate-700"
+      role="status"
+      aria-live="polite"
+    ></div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  // Per-card handlers for play, analyze, and share
+  document.querySelectorAll(".bg-white[data-rec-id]").forEach((card) => {
+    const playBtn = card.querySelector(".btn-play");
+    const audio = card.querySelector(".recording-audio");
+    const analyzeBtn = card.querySelector(".btn-analyze");
+    const shareBtn = card.querySelector(".btn-share");
+    const resultEl = card.querySelector(".analysis-result");
+
+    // Play / Pause logic
+    playBtn?.addEventListener("click", () => {
+      if (!audio) return;
+
+      if (audio.paused) {
+        audio.play();
+        playBtn.textContent = "Pause";
+      } else {
+        audio.pause();
+        playBtn.textContent = "Play";
+      }
+
+      audio.onended = () => {
+        playBtn.textContent = "Play";
+      };
+    });
+
+    // Analyze logic
+    if (analyzeBtn) {
+      analyzeBtn.addEventListener("click", async () => {
+        const id = analyzeBtn.dataset.id;
+
+        analyzeBtn.disabled = true;
+        analyzeBtn.textContent = "Analyzing...";
+
+        resultEl.classList.remove("hidden");
+        resultEl.textContent = "Running analysis...";
+
+        try {
+          const res = await fetch(`/api/analyze/${id}`, {
+            method: "POST",
+          });
+
+          const j = await res.json();
+
+          if (j.ok) {
+            const r = j.results;
+            const took = j.took_ms || 0;
+            // Build visual UI: decision badge, predicted, confidence bar, per-class bars
+            const probs = r.class_probabilities || {};
+            let barsHtml = "";
+            for (const [cls, val] of Object.entries(probs)) {
+              const pct = Math.round(val * 100);
+              barsHtml += `
+                <div class="mt-2">
+                  <div class="flex items-center justify-between text-xs text-slate-600 mb-1">
+                    <div class="font-medium">${cls}</div>
+                    <div class="text-xs">${pct}%</div>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-2">
+                    <div style="width:${pct}%" class="h-2 rounded-full bg-indigo-600"></div>
+                  </div>
+                </div>`;
+            }
+
+            resultEl.innerHTML = `
+              <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-sm text-slate-600">Decision</div>
+                    <div class="mt-1 font-semibold text-lg">${
+                      r.overall_decision
+                    }</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-slate-600">Predicted</div>
+                    <div class="mt-1 font-semibold text-lg">${
+                      r.predicted_class
+                    }</div>
+                  </div>
+                </div>
+
+                <div class="mt-3">
+                  <div class="flex items-center justify-between text-xs text-slate-600 mb-1">
+                    <div>Confidence</div>
+                    <div class="font-medium">${r.confidence_percent}%</div>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-3">
+                    <div style="width:${
+                      r.confidence_percent
+                    }%" class="h-3 rounded-full ${
+              r.confidence_percent >= 50 ? "bg-emerald-500" : "bg-rose-500"
+            }"></div>
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  ${barsHtml}
+                </div>
+
+                <div class="mt-3 text-xs text-slate-400">Processed in ${took} ms</div>
+                <div class="mt-3 flex items-center gap-2">
+                  <button class="btn-outline chat-with-ai" data-summary="${encodeURIComponent(
+                    JSON.stringify(r)
+                  )}">Chat with AI</button>
+                </div>
+              </div>`;
+
+            // wire chat button on this card
+            const chatBtn = resultEl.querySelector(".chat-with-ai");
+            if (chatBtn && window.openChatWithAI) {
+              chatBtn.addEventListener("click", (e) => {
+                try {
+                  const summary = JSON.parse(
+                    decodeURIComponent(chatBtn.dataset.summary || "{}")
+                  );
+                  const probs = summary.class_probabilities || {};
+                  const analysisText = `Decision: ${
+                    summary.overall_decision
+                  }\nPredicted: ${summary.predicted_class}\nConfidence: ${
+                    summary.confidence_percent
+                  }%\nClass probabilities:\n${Object.entries(probs)
+                    .map(([k, v]) => `${k}: ${(v * 100).toFixed(1)}%`)
+                    .join("\n")}`;
+                  window.openChatWithAI(analysisText);
+                } catch (err) {
+                  console.error(err);
+                  window.openChatWithAI("");
+                }
+              });
+            }
+          } else {
+            // Friendly error display when analysis failed
+            const errType = j.error_type || "unknown";
+            const hint = j.hint || null;
+            const detail = j.detail || j.error || "Unknown error";
+            resultEl.classList.remove("hidden");
+            resultEl.innerHTML = `
+              <div class="p-3 bg-rose-50 border border-rose-100 rounded-lg text-sm text-rose-800">
+                <div class="font-semibold">Analysis failed</div>
+                <div class="mt-1 text-xs text-rose-700">Reason: ${errType}</div>
+                ${
+                  hint
+                    ? `<div class="mt-2 text-xs text-slate-700">${hint}</div>`
+                    : ""
+                }
+                <details class="mt-2 text-xs text-slate-500"><summary>Technical details</summary><pre class="mt-2 p-2 bg-white text-xs text-slate-700 rounded">${detail}</pre></details>
+              </div>`;
+          }
+        } catch (err) {
+          resultEl.innerHTML = `
+            <div class="text-sm text-red-600">
+              Analyze error: ${err.message}
+            </div>
+          `;
+        } finally {
+          analyzeBtn.disabled = false;
+          analyzeBtn.textContent = "Analyze";
+        }
+      });
+    }
+
+    // Share logic
+    shareBtn?.addEventListener("click", async () => {
+      const id = shareBtn.getAttribute("data-id");
+
+      shareBtn.disabled = true;
+      shareBtn.textContent = "Sharing...";
+
+      try {
+        // Create expiring token (default 60 minutes)
+        const res = await fetch(`/api/share/create/${id}?minutes=60`);
+        const j = await res.json();
+
+        if (!j.ok) {
+          throw new Error(j.error || "Share failed");
+        }
+
+        const shareUrl = j.url;
+
+        if (navigator.share) {
+          await navigator.share({
+            title: `Recording ${id}`,
+            text: "Shared audio",
+            url: shareUrl,
+          });
+
+          resultEl.classList.remove("hidden");
+          resultEl.innerHTML = `
+            <div class="text-sm text-slate-600">
+              Shared via system dialog
+            </div>
+          `;
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(shareUrl);
+
+          resultEl.classList.remove("hidden");
+          resultEl.innerHTML = `
+            <div class="text-sm text-slate-600">
+              Temporary share link (60m) copied to clipboard:
+              <code class="break-all">${shareUrl}</code>
+            </div>
+          `;
+        } else {
+          resultEl.classList.remove("hidden");
+          resultEl.innerHTML = `
+            <div class="text-sm">
+              Temporary share URL:
+              <a href="${shareUrl}" target="_blank" class="text-indigo-600 underline break-all">
+                ${shareUrl}
+              </a>
+            </div>
+          `;
+        }
+      } catch (err) {
+        resultEl.classList.remove("hidden");
+        resultEl.innerHTML = `
+          <div class="text-sm text-red-600">
+            Share error: ${err.message}
+          </div>
+        `;
+      } finally {
+        shareBtn.disabled = false;
+        shareBtn.textContent = "Share";
+      }
+    });
+
+    // Delete logic
+    const deleteBtn = card.querySelector(".btn-delete");
+    deleteBtn?.addEventListener("click", async () => {
+      const id = deleteBtn.getAttribute("data-id");
+      const ok = window.confirm(
+        "Delete recording #" + id + "? This cannot be undone."
+      );
+      if (!ok) return;
+
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = "Deleting...";
+      try {
+        const res = await fetch(`/api/recordings/${id}`, { method: "DELETE" });
+        const j = await res.json();
+        if (!j.ok) throw new Error(j.error || "Delete failed");
+        // remove card from DOM
+        card.remove();
+      } catch (err) {
+        resultEl.classList.remove("hidden");
+        resultEl.innerHTML = `<div class="text-sm text-red-600">Delete error: ${err.message}</div>`;
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = "Delete";
+      }
+    });
+  });
+
+  // Analyze all button (top-level)
+  const analyzeAll = document.getElementById("analyzeAll");
+
+  analyzeAll?.addEventListener("click", async () => {
+    analyzeAll.disabled = true;
+    analyzeAll.textContent = "Analyzing all...";
+
+    const cards = Array.from(document.querySelectorAll("[data-rec-id]"));
+
+    for (const card of cards) {
+      const btn = card.querySelector(".btn-analyze");
+      if (btn) btn.click();
+
+      // small delay to avoid overloading server
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+
+    analyzeAll.disabled = false;
+    analyzeAll.textContent = "Analyze All";
+  });
+</script>
+{% endblock %}
